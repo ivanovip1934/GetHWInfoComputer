@@ -38,7 +38,7 @@ namespace GetHWInfoComputer
 
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
-                if (drive.IsReady)
+                if (drive.IsReady && drive.DriveType == DriveType.Fixed)
                 {
                     name = drive.Name;                    
                     if (name == SystemPartName)

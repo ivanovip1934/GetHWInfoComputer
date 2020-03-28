@@ -21,10 +21,18 @@ namespace GetHWInfoComputer
         {
             Dictionary<string, string>[] dicpor = GeneralStaticMethods.GetMonitorInfo<MonitorInfo>("WMIMonitorID");
             List<MonitorInfo> lstmonitor = new List<MonitorInfo>();
-            lstmonitor = (from item in dicpor
-                          select new MonitorInfo { ManufacturerName = item["ManufacturerName"], UserFriendlyName = item["UserFriendlyName"], SerialNumberID = item["SerialNumberID"] }).ToList();
+            if (dicpor != null)
+            {
+                lstmonitor = (from item in dicpor
+                              select new MonitorInfo { ManufacturerName = item["ManufacturerName"], UserFriendlyName = item["UserFriendlyName"], SerialNumberID = item["SerialNumberID"] }).ToList();
 
-            return lstmonitor;
+                return lstmonitor;
+            }
+            else
+            {
+                return null;
+            }
+
 
 
         }

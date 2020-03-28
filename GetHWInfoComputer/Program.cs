@@ -32,13 +32,18 @@ namespace GetHWInfoComputer
         static void Main(string[] args)
         {
 
+            #region check  machine is virtual?
+            if (GeneralStaticMethods.IsVirtualMachine())
+                    Environment.Exit(0);
+            #endregion
+
             GeneralOptions generaloptions = GeneralOptions.Getinstance();
             ComputerInfo PC1 = new ComputerInfo(Environment.MachineName);
             GeneralStaticMethods.MySleep(1000, 150000);
 
-            GeneralStaticMethods.SaveXMLToShare(generaloptions.PathToTempXmlFile, generaloptions.PathToFile, PC1);
-            //GeneralStaticMethods.WriteToXmlFile(generaloptions.PathToFile, PC1, false);
+            GeneralStaticMethods.SaveXMLToShare(generaloptions.PathToTempXmlFile, generaloptions.PathToFile, PC1);            
             ComputerInfo PC = GeneralStaticMethods.ReadFromXmlFile<ComputerInfo>(generaloptions.PathToFile);
+            
 
             //Console.WriteLine($"Computer name: {PC.Name}\n" +
             //    $" Date collected info: {PC.DateCollectedInfo}");
