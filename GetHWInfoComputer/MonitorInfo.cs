@@ -28,7 +28,8 @@ namespace GetHWInfoComputer
             ["PHL"] = Manufacturers.Philips,
             ["SAM"] = Manufacturers.Samsung,
             ["VSC"] = Manufacturers.ViewSonic,
-            ["DEL"] = Manufacturers.Dell
+            ["DEL"] = Manufacturers.Dell,
+            ["NEC"] = Manufacturers.NEC
         };
    
     
@@ -157,7 +158,8 @@ namespace GetHWInfoComputer
         Philips = 14,
         Samsung = 15,
         ViewSonic = 16,
-        Unknown = 17
+        Unknown = 17,
+        NEC = 18
     }
 
 
