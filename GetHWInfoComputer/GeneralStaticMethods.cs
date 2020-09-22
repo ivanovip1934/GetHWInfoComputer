@@ -44,7 +44,7 @@ namespace GetHWInfoComputer
                     {
                         if (props.Any(x => x.Name == PC.Name))
                         {
-                            dicProperty.Add(PC.Name, PC.Value.ToString());
+                            dicProperty.Add(PC.Name, PC.Value?.ToString());
                         }
                     }
                     dicProperty1[i] = dicProperty;
@@ -57,7 +57,7 @@ namespace GetHWInfoComputer
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e.Message}");
+                Console.WriteLine($"Error: {t.ToString()}{e.Message}");
                 return null;
             }
         }
@@ -74,7 +74,7 @@ namespace GetHWInfoComputer
             ManagementScope ms = new ManagementScope(@"\\.\root\wmi");
             ms.Connect();
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from " + wmiClass);
-            searcher.Scope = ms;
+            searcher.Scope = ms ;
 
             try
             {

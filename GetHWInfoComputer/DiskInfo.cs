@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GetHWInfoComputer
@@ -12,14 +13,16 @@ namespace GetHWInfoComputer
         public int Index { get; set; }
         public int Size { get; set; }
         public bool IsSSD { get; set; }
+        public string InterfaceType { get; set; }
         //private List<StorageInfo> Storages { get; set; }
 
         public DiskInfo() { }
-
+         
         public List<DiskInfo> GetStorage()
         {
             List<DiskInfo> storages = new List<DiskInfo>();
             int indexDisk = 0;
+             string pattern = "^ATA | ATA Device| SCSI Disk Device";     
             string model = String.Empty;
             bool isSSD;
             Dictionary<string, string>[] dicProperties = GeneralStaticMethods.GetHardWareInfo<DiskInfo>("Win32_DiskDrive");
@@ -27,16 +30,23 @@ namespace GetHWInfoComputer
             {
                 foreach (Dictionary<string, string> dicprop in dicProperties)
                 {
-                    indexDisk = int.Parse(dicprop["Index"]);
-                    model = dicprop["Model"].Replace(" SCSI Disk Device", "").Replace("ATA Device", "").Trim();
-                    isSSD = CheckStorageIsSSD.HasNominalMediaRotationRate($"\\\\.\\PhysicalDrive{indexDisk}");
-                    storages.Add(new DiskInfo
+                    if (dicprop["InterfaceType"] != "USB")
                     {
-                        Model = model,
-                        Index = indexDisk,
-                        IsSSD = isSSD,
-                        Size = (int)(long.Parse(dicprop["Size"]) / (1024 * 1024 * 1024))
-                    });
+                        indexDisk = int.Parse(dicprop["Index"]);
+                        model = Regex.Replace( dicprop["Model"], pattern,"",RegexOptions.IgnoreCase).Trim();
+                        if (dicprop["InterfaceType"] == "SCSI")
+                            isSSD = CheckStorageIsSSD.HasNoSeekPenalty($"\\\\.\\PhysicalDrive{indexDisk}");
+                        else
+                            isSSD = CheckStorageIsSSD.HasNominalMediaRotationRate($"\\\\.\\PhysicalDrive{indexDisk}");
+                        storages.Add(new DiskInfo
+                        {
+                            Model = model,
+                            Index = indexDisk,
+                            IsSSD = isSSD,
+                            Size = (int)(long.Parse(dicprop["Size"]) / (1024 * 1024 * 1024)),
+                            InterfaceType = dicprop["InterfaceType"]
+                        });
+                    }
                 }
                 return storages;
             }

@@ -37,6 +37,8 @@ namespace GetHWInfoComputer
                     Environment.Exit(0);
             #endregion
 
+           
+
             GeneralOptions generaloptions = GeneralOptions.Getinstance();
             ComputerInfo PC1 = new ComputerInfo(Environment.MachineName);
             GeneralStaticMethods.MySleep(1000, 150000);

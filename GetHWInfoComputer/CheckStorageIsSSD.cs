@@ -103,6 +103,25 @@ namespace GetHWInfoComputer
         }
 
         [StructLayout(LayoutKind.Sequential)]
+    struct SCSI_PASS_THROUGH
+        {
+            public ushort length;
+            public byte scsiStatus;
+            public byte pathId;
+            public byte targetId;
+            public byte lun;
+            public byte cdbLength;
+            public byte senseInfoLength;
+            public byte dataIn;
+            public uint dataTransferLength;
+            public uint timeOutValue;
+            public ulong dataBufferOffset;
+            public uint senseInfoOffset;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+            public byte[] cdb;
+        };
+
+        [StructLayout(LayoutKind.Sequential)]
         private struct ATAIdentifyDeviceQuery
         {
             public ATA_PASS_THROUGH_EX header;
@@ -137,7 +156,7 @@ namespace GetHWInfoComputer
             uint nSize,
             IntPtr Arguments);
 
-        public static void HasNoSeekPenalty(string sDrive)
+        public static bool HasNoSeekPenalty(string sDrive)
         {
             SafeFileHandle hDrive = CreateFileW(
                 sDrive,
@@ -151,12 +170,17 @@ namespace GetHWInfoComputer
             if (hDrive == null || hDrive.IsInvalid)
             {
                 string message = GetErrorMessage(Marshal.GetLastWin32Error());
-                Console.WriteLine("CreateFile failed. " + message);
+                Console.WriteLine("CreateFile failed 1. " + message);
+            }
+            else
+            {
+                Console.WriteLine($"hDrive: {hDrive}");
             }
 
             uint IOCTL_STORAGE_QUERY_PROPERTY = CTL_CODE(
                 IOCTL_STORAGE_BASE, 0x500,
                 METHOD_BUFFERED, FILE_ANY_ACCESS); // From winioctl.h
+            Console.WriteLine($"IOCTL_STORAGE_QUERY_PROPERTY : {IOCTL_STORAGE_QUERY_PROPERTY}");
 
             STORAGE_PROPERTY_QUERY query_seek_penalty =
                 new STORAGE_PROPERTY_QUERY();
@@ -183,19 +207,22 @@ namespace GetHWInfoComputer
             if (query_seek_penalty_result == false)
             {
                 string message = GetErrorMessage(Marshal.GetLastWin32Error());
-                Console.WriteLine("DeviceIoControl failed. " + message);
+                Console.WriteLine("DeviceIoControl failed 2. " + message);
             }
             else
             {
                 if (query_seek_penalty_desc.IncursSeekPenalty == false)
                 {
-                    Console.WriteLine("This drive has NO SEEK penalty.");
+                    //Console.WriteLine("This drive has NO SEEK penalty.");
+                    return true;
                 }
                 else
                 {
-                    Console.WriteLine("This drive has SEEK penalty.");
+                    //Console.WriteLine("This drive has SEEK penalty.");
+                   
                 }
             }
+             return false;
         }
 
         // Method for nominal media rotation rate
@@ -215,7 +242,7 @@ namespace GetHWInfoComputer
             if (hDrive == null || hDrive.IsInvalid)
             {
                 string message = GetErrorMessage(Marshal.GetLastWin32Error());
-                Console.WriteLine("CreateFile failed. " + message);
+                Console.WriteLine("CreateFile failed 3. " + message);
             }
 
             uint IOCTL_ATA_PASS_THROUGH = CTL_CODE(
@@ -247,13 +274,18 @@ namespace GetHWInfoComputer
                 (uint)Marshal.SizeOf(id_query),
                 out retval_size,
                 IntPtr.Zero);
+            //// DeviceIoControl
+            //bool isSuccess = false;
+            //isSuccess = DeviceIoControl(handle, 0x4d004 /* IOCTL_SCSI_PASS_THROUGH */, sptwbPtr, 592, sptwbPtr, 592, out returned, IntPtr.Zero);
+            //Console.Write("DeviceIoControl=" + isSuccess);
+
 
             hDrive.Close();
 
             if (result == false)
             {
                 string message = GetErrorMessage(Marshal.GetLastWin32Error());
-                Console.WriteLine("DeviceIoControl failed. " + message);
+                Console.WriteLine("DeviceIoControl failed 4. " + message);
                 return false;
             }
             else
