@@ -31,6 +31,7 @@ namespace GetHWInfoComputer
             ManagementScope ms = new ManagementScope($@"\\{Environment.MachineName}\root\cimv2");
             ms.Connect();
             SelectQuery searchQuery = new SelectQuery($"select * from {wmiClass}");
+            Console.WriteLine($@"SelectQuery = select * from {wmiClass}");
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(ms, searchQuery);
             try
             {
@@ -73,43 +74,65 @@ namespace GetHWInfoComputer
             PropertyInfo[] props = t.GetProperties();           
             ManagementScope ms = new ManagementScope(@"\\.\root\wmi");
             ms.Connect();
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from " + wmiClass);
-            searcher.Scope = ms ;
+            if (ms.IsConnected)
+            {
+                Console.WriteLine("ms is connected");
+            }
+            else
+            {
+                Console.WriteLine("ms is not connected");
+            }
+            SelectQuery searchQuery = new SelectQuery($"select * from {wmiClass}");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(ms, searchQuery);
+            
+            // ManagementObjectSearcher searcher = new ManagementObjectSearcher($"select * from  + {wmiClass}");
+            // searcher.Scope = ms ;
 
             try
             {
-                var obj = searcher.Get();
+                ManagementObjectCollection obj = searcher.Get();
+                if (obj == null)
+                {
+                    Console.WriteLine("Collection is  null");
+                }
+                else
+                {
+                    Console.WriteLine($"Collection count:  {obj.Count}");
+                }
                 if (!(obj == null))
                 {
-                    searchCount = searcher.Get().Count;
-                }
-                dicProperty1 = new Dictionary<string, string>[searchCount];
+                    searchCount = obj.Count;
+                    Console.WriteLine($"searchCount = {searchCount}");
+                    dicProperty1 = new Dictionary<string, string>[searchCount];
 
-                int i = 0;
-                foreach (ManagementObject share in searcher.Get())
-                {
-                    foreach (PropertyData PC in share.Properties)
+
+                    int i = 0;
+                    foreach (ManagementObject share in obj)
                     {
-                        if (props.Any(x => x.Name == PC.Name))
+                        foreach (PropertyData PC in share.Properties)
                         {
-
-                            if (PC.Value is Int16[])
+                            if (props.Any(x => x.Name == PC.Name))
                             {
-                                Int16[] ischar = PC.Value as Int16[];
-                                str = new StringBuilder(50);
-                                foreach (Int16 q in ischar)
-                                    str.Append((char)q);
-                                str.Replace("\0", "");
-                                dicProperty.Add(PC.Name, str.ToString());
+
+                                if (PC.Value is Int16[])
+                                {
+                                    Int16[] ischar = PC.Value as Int16[];
+                                    str = new StringBuilder(50);
+                                    foreach (Int16 q in ischar)
+                                        str.Append((char)q);
+                                    str.Replace("\0", "");
+                                    dicProperty.Add(PC.Name, str.ToString());
+                                }
                             }
                         }
+                        dicProperty1[i] = dicProperty;
+                        dicProperty = new Dictionary<string, string>();
+                        i++;                        
                     }
-                    dicProperty1[i] = dicProperty;
-                    dicProperty = new Dictionary<string, string>();
-                    i++;
-                }
-
-                return dicProperty1;
+                    return dicProperty1;
+                }                
+                return null;
+                
             }
             catch (Exception e)
             {

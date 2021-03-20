@@ -106,7 +106,9 @@ namespace GetHWInfoComputer
         public List<MonitorFromWMI> Get()
         {
             Dictionary<string, string>[] dicpor = GeneralStaticMethods.GetMonitorInfo<MonitorFromWMI>("WMIMonitorID");
+            Console.WriteLine($@"Count monitors: {dicpor.Count()}");
             List<MonitorFromWMI> lstmonitor = new List<MonitorFromWMI>();
+            
             if (dicpor != null)
             {
                 lstmonitor = (from item in dicpor

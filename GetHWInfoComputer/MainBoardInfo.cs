@@ -67,10 +67,11 @@ namespace GetHWInfoComputer
         private string[] MACAdresses(string manufacturers)
         {
             List<string> arrMAC = new List<string>();
+            Regex nicdesc = new Regex("cisco anyconnect", RegexOptions.IgnoreCase);
             string macManufacturer = String.Empty;
             var MACAddress = NetworkInterface
                                   .GetAllNetworkInterfaces()
-                                  .Where(nic => nic.NetworkInterfaceType != NetworkInterfaceType.Loopback && nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                                  .Where(nic => nic.NetworkInterfaceType != NetworkInterfaceType.Loopback && nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet && !nicdesc.IsMatch(nic.Description) )
                                   .Select(nic => new { nic.Description, MAC = nic.GetPhysicalAddress().ToString() });
             foreach (var item in MACAddress)
             {

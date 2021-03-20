@@ -48,7 +48,7 @@ namespace GetHWInfoComputer
         private const uint StorageDeviceSeekPenaltyProperty = 7;
         private const uint PropertyStandardQuery = 0;
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct STORAGE_PROPERTY_QUERY
         {
             public uint PropertyId;
@@ -57,7 +57,7 @@ namespace GetHWInfoComputer
             public byte[] AdditionalParameters;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct DEVICE_SEEK_PENALTY_DESCRIPTOR
         {
             public uint Version;
@@ -83,7 +83,7 @@ namespace GetHWInfoComputer
         // For DeviceIoControl to check nominal media rotation rate
         private const uint ATA_FLAGS_DATA_IN = 0x02;
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct ATA_PASS_THROUGH_EX
         {
             public ushort Length;
@@ -102,7 +102,7 @@ namespace GetHWInfoComputer
             public byte[] CurrentTaskFile;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     struct SCSI_PASS_THROUGH
         {
             public ushort length;
@@ -121,7 +121,7 @@ namespace GetHWInfoComputer
             public byte[] cdb;
         };
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct ATAIdentifyDeviceQuery
         {
             public ATA_PASS_THROUGH_EX header;
@@ -229,7 +229,7 @@ namespace GetHWInfoComputer
         // (Administrative privilege is required)
         public static bool HasNominalMediaRotationRate(string sDrive)
         {
-           //Console.WriteLine($"sDrive: {sDrive}");
+           Console.WriteLine($"sDrive: {sDrive}");
             SafeFileHandle hDrive = CreateFileW(
                 sDrive,
                 GENERIC_READ | GENERIC_WRITE, // Administrative privilege is required
@@ -237,18 +237,16 @@ namespace GetHWInfoComputer
                 IntPtr.Zero,
                 OPEN_EXISTING,
                 FILE_ATTRIBUTE_NORMAL,
-                IntPtr.Zero);
+                IntPtr.Zero);            
 
             if (hDrive == null || hDrive.IsInvalid)
             {
                 string message = GetErrorMessage(Marshal.GetLastWin32Error());
                 Console.WriteLine("CreateFile failed 3. " + message);
             }
-
             uint IOCTL_ATA_PASS_THROUGH = CTL_CODE(
                 IOCTL_SCSI_BASE, 0x040b, METHOD_BUFFERED,
-                FILE_READ_ACCESS | FILE_WRITE_ACCESS); // From ntddscsi.h
-
+                FILE_READ_ACCESS | FILE_WRITE_ACCESS); // From ntddscsi.h            
             ATAIdentifyDeviceQuery id_query = new ATAIdentifyDeviceQuery();
             id_query.data = new ushort[256];
 
@@ -263,8 +261,7 @@ namespace GetHWInfoComputer
             id_query.header.CurrentTaskFile = new byte[8];
             id_query.header.CurrentTaskFile[6] = 0xec; // ATA IDENTIFY DEVICE
 
-            uint retval_size;
-
+            uint retval_size;            
             bool result = DeviceIoControl(
                 hDrive,
                 IOCTL_ATA_PASS_THROUGH,
@@ -273,7 +270,7 @@ namespace GetHWInfoComputer
                 ref id_query,
                 (uint)Marshal.SizeOf(id_query),
                 out retval_size,
-                IntPtr.Zero);
+                IntPtr.Zero);           
             //// DeviceIoControl
             //bool isSuccess = false;
             //isSuccess = DeviceIoControl(handle, 0x4d004 /* IOCTL_SCSI_PASS_THROUGH */, sptwbPtr, 592, sptwbPtr, 592, out returned, IntPtr.Zero);
@@ -284,8 +281,8 @@ namespace GetHWInfoComputer
 
             if (result == false)
             {
-                string message = GetErrorMessage(Marshal.GetLastWin32Error());
-                Console.WriteLine("DeviceIoControl failed 4. " + message);
+                string message = Marshal.GetLastWin32Error() +"   " + GetErrorMessage(Marshal.GetLastWin32Error());
+                Console.WriteLine("DeviceIoControl failed: " + message);
                 return false;
             }
             else

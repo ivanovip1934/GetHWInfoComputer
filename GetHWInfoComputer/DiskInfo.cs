@@ -33,7 +33,10 @@ namespace GetHWInfoComputer
                     if (dicprop["InterfaceType"] != "USB")
                     {
                         indexDisk = int.Parse(dicprop["Index"]);
+                        Console.WriteLine(indexDisk);
                         model = Regex.Replace( dicprop["Model"], pattern,"",RegexOptions.IgnoreCase).Trim();
+                        Console.WriteLine(model);
+                        Console.WriteLine(dicprop["InterfaceType"]);
                         if (dicprop["InterfaceType"] == "SCSI")
                             isSSD = CheckStorageIsSSD.HasNoSeekPenalty($"\\\\.\\PhysicalDrive{indexDisk}");
                         else
