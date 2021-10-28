@@ -18,6 +18,7 @@ namespace GetHWInfoComputer
         private Dictionary<string, Manufacturers> dicManufacturer = new Dictionary<string, Manufacturers>()
         {
             ["ACI"] = Manufacturers.Asus,
+            ["AUS"] = Manufacturers.Asus,
             ["ACR"] = Manufacturers.Acer,
             ["AOC"] = Manufacturers.AOC,
             ["BNQ"] = Manufacturers.BenQ,
